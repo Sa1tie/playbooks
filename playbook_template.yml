@@ -1,0 +1,42 @@
+# File Name: name_of_file.yml
+# Author: John Smith
+# Ver: 1.0.0 
+# Purpose: This playbook does this.
+# Date: 0/0/00
+# Notes:
+# Change log:
+# TO DO:
+---
+# Playbook title/description
+
+- hosts: 
+  # Specify target hosts
+
+  vars:
+    # Define variables that will be used
+
+  vars_prompt:
+    - name: 
+      prompt:  
+      # Prompt for user input
+
+  pre_tasks:
+    - name:
+      # Tasks to run before main tasks
+  
+  roles:
+    - # List any roles to import  
+
+  tasks:
+    - name: 
+      # Main tasks go here
+      module:
+        # Module params  
+
+  post_tasks:  
+    - name:
+      # Tasks to run after main tasks
+  
+  handlers:
+    - name: 
+      # Handlers (triggered by notifications)

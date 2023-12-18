@@ -1,0 +1,69 @@
+# File Name: fs_folders_permissions.yml
+# Author: Roger McNulty and Andrew Cormier
+# Ver: 1.0.0 
+# Purpose: Creates folders and share folders and sets permissions.
+# Date: 10/20/2023
+# Notes: Converted Andrew Cormier's PS script into playbook.
+# Change log:
+# TO DO:
+---
+- name: Create folders and set permissions on Windows file server
+  hosts: windows_servers
+
+  vars:
+
+    share_path: F:\ # Define top level share path
+
+    folders: # Define folders to create
+      - {path: "{{ share_path }}\Private", share_name: "Private$"}
+      - {path: "{{ share_path }}\Profiles", share_name: "Profiles$"}
+      - {path: "{{ share_path }}\Winapps"}
+      - {path: "{{ share_path }}\Shared"}
+      - {path: "{{ share_path }}\Shared\Program"}
+      - {path: "{{ share_path }}\Shared\Security"}
+      - {path: "{{ share_path }}\Winapps\antivirus"}
+      - {path: "{{ share_path }}\Winapps\antivirus\AVUpdate", share_name: "AVUpdate"}
+
+    admin_group: BUILTIN\Administrators # Define admin group for permissions
+    auth_users_group: Authenticated Users # Authenticated users group
+
+    # Define permissions to set
+    permissions:
+      - {path: "{{ item.path }}", group: "{{ admin_group }}", rights: FullControl}
+      - {path: "{{ item.path }}", group: SYSTEM, rights: FullControl}
+      - {path: "{{ item.path }}", group: "{{ auth_users_group }}", rights: ReadAndExecute} # For some folders      
+
+  tasks:
+
+    - name: Create folders
+      win_file:
+        path: "{{ item.path }}"
+        state: directory
+      loop: "{{ folders }}"
+
+    - name: Remove inherited permissions
+      win_acl:
+        path: "{{ item.path }}"
+        user: Users
+        rights: DeleteSubdirectoriesAndFiles
+        type: allow
+        state: absent
+      loop: "{{ folders }}"
+
+    - name: Set permissions on folders
+      win_acl:
+        path: "{{ item.path }}"
+        user: "{{ item.group }}" 
+        rights: "{{ item.rights }}"
+        type: allow
+        propagation: 'InheritOnly'
+        state: present
+      loop: "{{ permissions }}"
+
+    - name: Create shares
+      win_share:
+        name: "{{ item.share_name | default(omit) }}"
+        path: "{{ item.path }}"
+        full: Administrators
+        change: yes
+      loop: "{{ folders }}"

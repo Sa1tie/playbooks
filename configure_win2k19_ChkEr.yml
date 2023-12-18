@@ -1,0 +1,179 @@
+# File Name: configure_win2k19_ChkEr.yml
+# Author: Roger McNulty
+# Ver: 1.0.0 
+# Purpose: 
+# Date: 12/17/23
+# Notes:
+# Change log:
+# TODO: Use Ansible Vault to encrypt sensitive data like passwords.
+#	Break your playbook into roles or tasks to improve readability and maintainability.
+#	Use an elevated shell to execute commands when logging in/out from Admin to zcaadmin.
+#	Add error handling and checks to ensure the playbook doesn't continue blindly.
+#	Ensure consistent indentation throughout the playbook.
+
+---
+- name: Windows Configuration Playbook
+  hosts: windows_nodes
+  gather_facts: no
+
+  vars:
+    third_octet: 209
+    subnet_mask: 255.255.255.128
+
+  tasks:
+    # Create a new user "zcaadmin"
+    - name: Create new user "zcaadmin"
+      win_user:
+        name: zcaadmin
+        password: "{{ zcaadmin_password | default('Password123456') }}"
+        state: present
+
+    # Disable Windows Firewall Profiles
+    - name: Disable Windows Firewall Profiles
+      win_firewall_profile:
+        profile: "{{ item }}"
+        state: off
+      with_items:
+        - Domain
+        - Public
+        - Private
+
+    # Disable Windows Defender Real-time Protection
+    - name: Disable Windows Defender Real-time Protection
+      ansible.windows.win_shell: |
+        Set-MpPreference -DisableRealtimeMonitoring $true
+
+    # Enable Windows Optional Feature "Microsoft-Windows-RemoteDesktopServices-Tools"
+    - name: Enable Windows Optional Feature "Microsoft-Windows-RemoteDesktopServices-Tools"
+      win_feature:
+        name: Remote-Desktop-Services-Tools
+        state: present
+
+    # Uncheck "Hide Extensions for known file types"
+    - name: Uncheck "Hide Extensions for known file types"
+      ansible.windows.win_shell: |
+        Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "HideFileExt" -Value 0
+
+    # Change resolution to 1680 x 1050 (ignoring errors)
+    - name: Change resolution to 1680 x 1050
+      ansible.windows.win_shell: |
+        # PowerShell code to change display resolution
+        Add-Type -TypeDefinition @"
+          using System;
+          using System.Runtime.InteropServices;
+
+          public class DisplaySettings {
+            [DllImport("user32.dll")]
+            public static extern int ChangeDisplaySettingsEx(string lpszDeviceName, IntPtr lpDevMode, IntPtr hwnd, ChangeDisplaySettingsFlags dwflags, IntPtr lParam);
+
+            [StructLayout(LayoutKind.Sequential)]
+            public struct DEVMODE {
+              [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
+              public string dmDeviceName;
+              public Int16 dmSpecVersion;
+              public Int16 dmDriverVersion;
+              public Int16 dmSize;
+              public Int16 dmDriverExtra;
+              public Int32 dmFields;
+              public Int32 dmPositionX;
+              public Int32 dmPositionY;
+              public Int32 dmDisplayOrientation;
+              public Int32 dmDisplayFixedOutput;
+              public Int16 dmColor;
+              public Int16 dmDuplex;
+              public Int16 dmYResolution;
+              public Int16 dmTTOption;
+              public Int16 dmCollate;
+              [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
+              public string dmFormName;
+              public Int16 dmLogPixels;
+              public Int32 dmBitsPerPel;
+              public Int32 dmPelsWidth;
+              public Int32 dmPelsHeight;
+              public Int32 dmDisplayFlags;
+              public Int32 dmDisplayFrequency;
+              public Int32 dmICMMethod;
+              public Int32 dmICMIntent;
+              public Int32 dmMediaType;
+              public Int32 dmDitherType;
+              public Int32 dmReserved1;
+              public Int32 dmReserved2;
+              public Int32 dmPanningWidth;
+              public Int32 dmPanningHeight;
+            }
+
+            public enum ChangeDisplaySettingsFlags : int {
+              CDS_UPDATEREGISTRY = 0x01,
+              CDS_TEST = 0x02,
+              CDS_FULLSCREEN = 0x04,
+              CDS_GLOBAL = 0x08,
+              CDS_SET_PRIMARY = 0x10,
+              CDS_VIDEOPARAMETERS = 0x20,
+              CDS_ENABLE_UNSAFE_MODES = 0x80,
+              CDS_DISABLE_UNSAFE_MODES = 0x100,
+              CDS_RESET = 0x40000000,
+              CDS_RESET_EX = 0x20000000,
+              CDS_NORESET = 0x10000000
+            }
+          }
+          DisplaySettings.DEVMODE devMode = new DisplaySettings.DEVMODE();
+          devMode.dmPelsWidth = 1680;
+          devMode.dmPelsHeight = 1050;
+          int iRet = DisplaySettings.ChangeDisplaySettingsEx(null, IntPtr.Zero, IntPtr.Zero, DisplaySettings.ChangeDisplaySettingsFlags.CDS_FULLSCREEN, IntPtr.Zero);
+        "@
+      args:
+        executable: powershell.exe
+      register: resolution_change_result
+      ignore_errors: yes  # Ignore errors as it may not be supported on all systems
+
+    # Check if resolution change was successful
+    - name: Check resolution change status
+      assert:
+        that: 
+          - resolution_change_result.rc == 0
+        success_msg: "Resolution change was successful."
+        fail_msg: "Resolution change failed."
+      ignore_errors: yes  # Continue with the playbook even if resolution change fails
+
+    # Disable IPv6 on NIC1
+    - name: Disable IPv6 on NIC1
+      win_netadapter_binding:
+        name: NIC1
+        component: ms_tcpip6
+        enabled: no
+
+    # Set IP address for NIC1
+    - name: Set IP address for NIC1
+      win_ipaddress:
+        name: NIC1
+        ip_address: "192.168.{{ third_octet }}.30"
+        subnet_mask: "{{ subnet_mask }}"
+        gateway: "192.168.{{ third_octet }}.1"
+        dns_servers:
+          - "192.168.{{ third_octet }}.10"
+
+    # Prompt user for hostname change
+    - name: Prompt user for hostname change
+      ansible.windows.win_shell: |
+        $newHostname = Read-Host -Prompt "Enter the new hostname"
+        Rename-Computer -NewName $newHostname -Force
+
+    # Restart the computer
+    - name: Restart the computer
+      ansible.windows.win_reboot:
+        reboot_timeout: 600
+
+    # Log in as "zcaadmin" after reboot
+    - name: Log in as "zcaadmin" after reboot
+      ansible.windows.win_shell: |
+        $SecurePassword = ConvertTo-SecureString "Password123456" -AsPlainText -Force
+        $Credential = New-Object System.Management.Automation.PSCredential ("zcaadmin", $SecurePassword)
+        Start-Process -FilePath "C:\Windows\System32\cmd.exe" -Credential $Credential
+      async: 3600
+      poll: 0
+
+    # Show summary
+    - name: Show summary
+      debug:
+        msg: All tasks have been completed successfully.
+

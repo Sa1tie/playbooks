@@ -1,0 +1,17 @@
+# File Name: test_ping.yml
+# Author: Roger McNulty
+# Ver: 1.0.0 
+# Purpose: 
+# Date: 12/17/23
+# Notes:
+# Change log:
+# TODO:
+
+---
+- name: Test Ansible Connectivity to Windows Node
+  hosts: 192.168.33.10  # Replace with the hostname or IP address of your Windows Server node
+  gather_facts: no
+
+  tasks:
+    - name: Ping the Windows Node
+      win_ping:

@@ -1,0 +1,144 @@
+# File Name: nic_teaming.yml
+# Author: Roger McNulty
+# Ver: 1.0.0 
+# Purpose: This playbook configures NIC teaming on Windows Server 2019 and ESXi 7
+
+# Date: 10/20/23
+# Notes:
+# Change log:
+# TO DO:
+---
+- name: Configure NIC Teaming
+  hosts: windows_servers, esxi_hosts
+  
+  vars:
+    windows_admin_user: Administrator
+    windows_admin_password: Password123456
+    
+    esxi_admin_user: root
+    esxi_admin_password: Password123456
+    
+    third_octet: 3
+    
+  tasks:
+
+    - name: Get server model
+      community.general.dell_server_info:
+      register: server_info
+
+    - name: Configure Windows NIC
+      block:
+        
+      - name: Configure NIC3 IPv4
+        win_interface:
+          name: NIC3
+          ipv4_address: "192.168.{{ third_octet }}.31"
+          subnet_mask: "255.255.255.128"
+        notify:
+          - restart windows
+            
+      - name: Wait for networking to stabilize
+        wait_for_connection:
+          delay: 60
+          timeout: 300
+            
+      - name: Verify NIC3 config 
+        win_command: ipconfig
+        register: ipconfig_out
+        
+      - name: Validate ipconfig
+        assert:
+          that:
+            - "'192.168.{{ third_octet }}.31' in ipconfig_out.stdout"  
+      rescue:
+        - debug: 
+            msg: "Windows NIC3 configuration failed"
+            
+      when: inventory_hostname in groups['windows_servers']
+      
+    - name: Configure ESXi
+      block:
+        
+      - name: Connect to ESXi
+        community.vmware.vmware_vm_shell:
+          hostname: "{{ esxi_hostname }}"
+          username: "{{ esxi_admin_user }}"
+          password: "{{ esxi_admin_password }}"
+          vmware_cmd: "/networking/virtualswitch?format=json"
+            
+      - name: Create VM vSwitch
+        community.vmware.vmware_vm_shell:
+          hostname: "{{ esxi_hostname }}"
+          username: "{{ esxi_admin_user }}"
+          password: "{{ esxi_admin_password }}"
+          vmware_cmd: >
+            /host/vswitch.add?vswitchName=VM_vSwitch
+            &numPorts=128
+            &nic=vmnic4,vmnic5
+            &linkDiscoveryProtocolConfig=both
+            &networkPolicy.loadBalancing=loadbalance_ip
+            &notifySwitches=true
+            &failback=true
+            
+      # Configure port groups  
+            
+      - name: Verify VM vSwitch
+        community.vmware.vmware_vm_shell:
+          hostname: "{{ esxi_hostname }}"
+          username: "{{ esxi_admin_user }}"
+          password: "{{ esxi_admin_password }}"
+          vmware_cmd: "/networking/vswitch?format=json"
+        register: vswitches
+        
+      - name: Validate VM vSwitch
+        assert:
+          that:
+            - "'VM_vSwitch' in vswitches.vmware_result"
+      rescue:
+        - debug: 
+            msg: "ESXi VM vSwitch configuration failed"
+            
+      when: inventory_hostname in groups['esxi_hosts']
+      
+    - name: Disable NIC3 Windows
+      win_interfaces:
+        name: NIC3
+        state: absent
+      when: inventory_hostname in groups['windows_servers']
+
+    - name: Create NIC team Windows
+      win_team:
+        name: Project_Team
+        interfaces:
+         - NIC1
+         - NIC2
+        team_mode: LACP
+        
+      win_team_interface:
+        name: Project_Team
+        ipv4_address: "192.168.{{ third_octet }}.30"
+        subnet_mask: "255.255.255.128"
+        default_gateway: "192.168.{{ third_octet }}.1"
+        dns_servers:
+         - "192.168.{{ third_octet }}.10"
+      when: inventory_hostname in groups['windows_servers']
+
+    - name: Configure ESXi Management Network
+      community.vmware.vmware_vm_host_firewall_manager:
+        hostname: "{{ esxi_hostname }}"
+        username: "{{ esxi_admin_user }}"
+        password: "{{ esxi_admin_password }}"
+        networks:
+          - portgroup_name: Management Network
+            enabled: true
+            vlan_id: 100
+            vmnics: 
+             - vmnic0
+             - vmnic1
+      when: inventory_hostname in groups['esxi_hosts']
+
+  handlers:
+  
+    - name: restart windows
+      win_reboot:
+        post_reboot_delay: 60

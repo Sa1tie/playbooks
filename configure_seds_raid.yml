@@ -1,0 +1,91 @@
+# File Name: configure_seds_raid.yml
+# Author: Roger McNulty
+# Ver: 1.0.0 
+# Purpose: This playbook configures RAID and encryption on Dell servers based upon the specific model.
+# Date: 10/20/23
+# Notes:
+# Change log:
+# TO DO:
+---
+- name: Configure RAID and encryption on Dell servers
+  hosts: localhost
+  gather_facts: false
+
+  vars_prompt:  
+    - name: server_ip
+      prompt: Enter IP address of server
+      
+  tasks:
+
+  - name: Get server model
+    community.general.dell_server_info:
+      hostname: "{{ server_ip }}"
+      username: root
+      password: Castadmin1
+    register: server_info
+          
+  - name: Enable drive encryption
+    community.general.open_idrac_redfish:
+      name: Enable drive encryption
+      iDRAC_ip: "{{ server_ip }}"
+      iDRAC_user: root
+      iDRAC_password: Castadmin1
+      command: SecurityConfig
+      
+  - name: Set encryption passphrase
+    community.general.open_idrac_redfish:
+      name: Set encryption passphrase
+      iDRAC_ip: "{{ server_ip }}"
+      iDRAC_user: root
+      iDRAC_password: Castadmin1  
+      command: SetManagerKey
+      attribute: Key
+      value: SED_Local_Key1
+      
+  - name: Create RAID 1 OS disk
+    when: server_info.server_model is match('R5.*')
+    community.general.open_idrac_redfish:
+      name: Create OS VD
+      iDRAC_ip: "{{ server_ip }}"
+      iDRAC_user: root
+      iDRAC_password: Castadmin1
+      command: CreateVD
+      raidlevel: 1
+      disks: [01:00, 01:01]
+      name: OS
+      
+  - name: Create RAID 5 data disk
+    when: server_info.server_model is match('R5.*')
+    community.general.open_idrac_redfish:
+      name: Create DATA VD 
+      iDRAC_ip: "{{ server_ip }}"
+      iDRAC_user: root
+      iDRAC_password: Castadmin1
+      command: CreateVD
+      raidlevel: 5
+      disks: All
+      name: DATA  
+      
+  - name: Create RAID 1 OS disk
+    when: server_info.server_model is match('R7.*')
+    community.general.open_idrac_redfish:
+      name: Create OS VD
+      iDRAC_ip: "{{ server_ip }}"
+      iDRAC_user: root
+      iDRAC_password: Castadmin1
+      command: CreateVD
+      raidlevel: 1
+      disks: [01:00, 01:01]
+      name: OS
+      
+  - name: Create RAID 6 data disk
+    when: server_info.server_model is match('R7.*')
+    community.general.open_idrac_redfish:
+      name: Create DATA VD
+      iDRAC_ip: "{{ server_ip }}"
+      iDRAC_user: root
+      iDRAC_password: Castadmin1
+      command: CreateVD
+      raidlevel: 6
+      disks: All  
+      name: DATA
