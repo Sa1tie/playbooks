@@ -1,0 +1,18 @@
+---
+- name: ASCII Signature Test
+  hosts: windows_nodes
+  gather_facts: no
+
+  tasks:
+    - name: Show summary
+      debug:
+        msg: |
+          `7MM"""Mq.                       .g8"""bgd `7MM"""Mq. MMP""MM""YMM 
+          MM   `MM.                    .dP'     `M   MM   `MM.P'   MM   `7 
+          MM   ,M9  ,pW"Wq.   .P"Ybmmm dM'       `   MM   ,M9      MM      
+          MMmmdM9  6W'   `Wb :MI  I8   MM            MMmmdM9       MM      
+          MM  YM.  8M     M8  WmmmP"   MM.    `7MMF' MM            MM      
+          MM   `Mb.YA.   ,A9 8M        `Mb.     MM   MM            MM      
+          .JMML. .JMM.`Ybmd9'   YMMMMMb    `"bmmmdPY .JMML.        .JMML.    
+                             6'     dP                                     
+                             Ybmmmd'
