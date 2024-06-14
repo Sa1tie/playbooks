@@ -15,7 +15,7 @@
 
 ---
 - name: Windows Configuration Playbook
-  hosts: windows_nodes
+  hosts: windows
   gather_facts: no
 
   tasks:
