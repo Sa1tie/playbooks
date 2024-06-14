@@ -119,12 +119,13 @@
       register: resolution_change_result
       ignore_errors: yes  # Ignore errors as it may not be supported on all systems
 
-    # Disable IPv6 on NIC1
+    # Disable IPv6 on NIC1 using community.windows.win_netadapter
     - name: Disable IPv6 on NIC1
-      win_netadapter_binding:
-        name: NIC1
+      community.windows.win_netadapter:
+        name: "NIC1"
         component: ms_tcpip6
-        enabled: no
+        state: absent
+
 
     # Set IP address for NIC1
     - name: Set IP address for NIC1
