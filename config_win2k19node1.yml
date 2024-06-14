@@ -38,9 +38,11 @@
 
     # Enable Windows Optional Feature "Microsoft-Windows-RemoteDesktopServices-Tools"
     - name: Enable Windows Optional Feature "Microsoft-Windows-RemoteDesktopServices-Tools"
-      win_feature:
-        name: Remote-Desktop-Services-Tools
+      community.windows.win_feature:
+        name: "RSAT-RDS-Tools"
         state: present
+        include_management_tools: yes  # Ensure management tools are included
+        restart: yes  # Restart if required for the feature
 
     # Uncheck "Hide Extensions for known file types"
     - name: Uncheck "Hide Extensions for known file types"
