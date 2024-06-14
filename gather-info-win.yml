@@ -1,0 +1,144 @@
+---
+- name: Gather comprehensive information from Windows Server 2019 machines
+  hosts: windows
+  gather_facts: no
+  tasks:
+    - name: Get computer name
+      win_shell: |
+        $ComputerName = (Get-WmiObject -Class Win32_ComputerSystem).Name
+        Write-Output $ComputerName
+      register: computer_name
+
+    - name: Get operating system information
+      win_shell: |
+        $OSInfo = Get-WmiObject -Class Win32_OperatingSystem
+        $OSInfo | Select-Object -Property Caption, Version, BuildNumber, OSArchitecture, CSName, LastBootUpTime
+      register: os_info
+
+    - name: Get hardware information
+      win_shell: |
+        $HardwareInfo = Get-WmiObject -Class Win32_ComputerSystem
+        $HardwareInfo | Select-Object -Property Manufacturer, Model, NumberOfProcessors, TotalPhysicalMemory
+      register: hardware_info
+
+    - name: Get processor information
+      win_shell: |
+        $ProcessorInfo = Get-WmiObject -Class Win32_Processor
+        $ProcessorInfo | Select-Object -Property Name, NumberOfCores, NumberOfLogicalProcessors, MaxClockSpeed
+      register: processor_info
+
+    - name: Get memory information
+      win_shell: |
+        $MemoryInfo = Get-WmiObject -Class Win32_PhysicalMemory
+        $MemoryInfo | Select-Object -Property Manufacturer, Capacity, Speed, PartNumber
+      register: memory_info
+
+    - name: Get disk information
+      win_shell: |
+        $DiskInfo = Get-WmiObject -Class Win32_DiskDrive
+        $DiskInfo | Select-Object -Property DeviceID, Model, MediaType, Size, Partitions, Status
+      register: disk_info
+
+    - name: Get network adapter information
+      win_shell: |
+        $NetAdapters = Get-NetAdapter
+        $NetAdapters | Select-Object -Property Name, InterfaceDescription, MacAddress, Status, LinkSpeed
+      register: net_adapter_info
+
+    - name: Get IP configuration
+      win_shell: |
+        $IPConfig = Get-NetIPAddress
+        $IPConfig | Select-Object -Property IPAddress, InterfaceAlias, AddressFamily, PrefixLength
+      register: ip_config
+
+    - name: Get installed software
+      win_shell: |
+        $InstalledSoftware = Get-WmiObject -Class Win32_Product
+        $InstalledSoftware | Select-Object -Property Name, Version, Vendor, InstallDate
+      register: installed_software
+
+    - name: Get hotfixes information
+      win_shell: |
+        $Hotfixes = Get-HotFix
+        $Hotfixes | Select-Object -Property HotFixID, Description, InstalledOn
+      register: hotfix_info
+
+    - name: Get environment variables
+      win_shell: |
+        $EnvVariables = Get-ChildItem Env:
+        $EnvVariables | ForEach-Object { $_.Name + "=" + $_.Value }
+      register: env_variables
+
+    - name: Get running services
+      win_shell: |
+        $Services = Get-Service
+        $Services | Select-Object -Property Name, DisplayName, Status, StartType
+      register: running_services
+
+    - name: Get user accounts
+      win_shell: |
+        $Users = Get-WmiObject -Class Win32_UserAccount -Filter "LocalAccount=True"
+        $Users | Select-Object -Property Name, FullName, Status
+      register: user_accounts
+
+    - name: Get scheduled tasks
+      win_shell: |
+        $ScheduledTasks = Get-ScheduledTask
+        $ScheduledTasks | Select-Object -Property TaskName, TaskPath, State, LastRunTime, NextRunTime
+      register: scheduled_tasks
+
+    - name: Output computer name
+      debug:
+        msg: "{{ computer_name.stdout_lines }}"
+
+    - name: Output OS information
+      debug:
+        msg: "{{ os_info.stdout_lines }}"
+
+    - name: Output hardware information
+      debug:
+        msg: "{{ hardware_info.stdout_lines }}"
+
+    - name: Output processor information
+      debug:
+        msg: "{{ processor_info.stdout_lines }}"
+
+    - name: Output memory information
+      debug:
+        msg: "{{ memory_info.stdout_lines }}"
+
+    - name: Output disk information
+      debug:
+        msg: "{{ disk_info.stdout_lines }}"
+
+    - name: Output network adapter information
+      debug:
+        msg: "{{ net_adapter_info.stdout_lines }}"
+
+    - name: Output IP configuration
+      debug:
+        msg: "{{ ip_config.stdout_lines }}"
+
+    - name: Output installed software
+      debug:
+        msg: "{{ installed_software.stdout_lines }}"
+
+    - name: Output hotfixes information
+      debug:
+        msg: "{{ hotfix_info.stdout_lines }}"
+
+    - name: Output environment variables
+      debug:
+        msg: "{{ env_variables.stdout_lines }}"
+
+    - name: Output running services
+      debug:
+        msg: "{{ running_services.stdout_lines }}"
+
+    - name: Output user accounts
+      debug:
+        msg: "{{ user_accounts.stdout_lines }}"
+
+    - name: Output scheduled tasks
+      debug:
+        msg: "{{ scheduled_tasks.stdout_lines }}"
