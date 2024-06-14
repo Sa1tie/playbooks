@@ -1,10 +1,17 @@
 # File Name: configure_win2k19node1.yml
 # Author: Roger McNulty
 # Ver: 1.0.0 
-# Purpose: 
+# Purpose: Configure inital settings for Windows Server 2019
 # Date: 06/14/24
-# Notes:
+# Notes: 
 # Change log:
+
+## ██████╗  ██████╗  ██████╗  ██████╗ ██████╗ ████████╗
+## ██╔══██╗██╔═══██╗██╔════╝ ██╔════╝ ██╔══██╗╚══██╔══╝
+## ██████╔╝██║   ██║██║  ███╗██║  ███╗██████╔╝   ██║   
+## ██╔══██╗██║   ██║██║   ██║██║   ██║██╔═══╝    ██║   
+## ██║  ██║╚██████╔╝╚██████╔╝╚██████╔╝██║        ██║   
+## ╚═╝  ╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝        ╚═╝   
 
 ---
 - name: Windows Configuration Playbook
