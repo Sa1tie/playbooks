@@ -1,0 +1,18 @@
+---
+- name: Install Google Chrome on Windows
+  hosts: windows
+  gather_facts: no
+
+  tasks:
+    - name: Download Google Chrome installer
+      win_get_url:
+        url: "https://dl.google.com/chrome/install/GoogleChromeStandaloneEnterprise64.msi"
+        dest: C:\Temp\GoogleChromeStandaloneEnterprise64.msi
+        validate_certs: no
+
+    - name: Install Google Chrome silently
+      win_package:
+        path: C:\Temp\GoogleChromeStandaloneEnterprise64.msi
+        product_id: "{23170DC3-63AF-47DB-AE02-E526E8D1C7F6}"  # Replace with actual product ID if needed
+        arguments: '/qn /norestart /log "C:\Temp\chrome_install.log"'
+        state: present
