@@ -1,3 +1,18 @@
+# File Name: gather-info-win.yml
+# Author: Roger McNulty
+# Ver: 1.0.0 
+# Purpose: Gather comprehensive information from Windows Server 2019 machines
+# Date: 06/14/24
+# Notes: May add option to export results to a log file by dated retrieved
+# Change log:
+
+## ██████╗  ██████╗  ██████╗  ██████╗ ██████╗ ████████╗
+## ██╔══██╗██╔═══██╗██╔════╝ ██╔════╝ ██╔══██╗╚══██╔══╝
+## ██████╔╝██║   ██║██║  ███╗██║  ███╗██████╔╝   ██║   
+## ██╔══██╗██║   ██║██║   ██║██║   ██║██╔═══╝    ██║   
+## ██║  ██║╚██████╔╝╚██████╔╝╚██████╔╝██║        ██║   
+## ╚═╝  ╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝        ╚═╝   
+
 ---
 - name: Gather comprehensive information from Windows Server 2019 machines
   hosts: windows
