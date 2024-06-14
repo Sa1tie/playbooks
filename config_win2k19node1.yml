@@ -120,11 +120,11 @@
       ignore_errors: yes  # Ignore errors as it may not be supported on all systems
 
     # Disable IPv6 on NIC1 using community.windows.win_netadapter
-    - name: Disable IPv6 on NIC1
-      community.windows.win_netadapter:
-        name: "NIC1"
-        component: ms_tcpip6
-        state: absent
+    #- name: Disable IPv6 on NIC1
+    #  community.windows.win_netadapter:
+    #    name: "NIC1"
+    #    component: ms_tcpip6
+    #    state: absent
 
 
     # Set IP address for NIC1
