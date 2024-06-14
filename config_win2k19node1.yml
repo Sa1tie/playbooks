@@ -128,14 +128,14 @@
 
 
     # Set IP address for NIC1
-    - name: Set IP address for NIC1
-      win_ipaddress:
-        name: NIC1
-        ip_address: "192.168.17.11"
-        subnet_mask: "255.255.255.0"
-        gateway: ""
-        dns_servers:
-          - ""
+    #- name: Set IP address for NIC1
+    #  win_ipaddress:
+    #    name: NIC1
+    #    ip_address: "192.168.17.11"
+    #    subnet_mask: "255.255.255.0"
+    #    gateway: ""
+    #    dns_servers:
+    #      - ""
 
     # Prompt user for hostname change
     - name: Prompt user for hostname change
