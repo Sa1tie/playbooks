@@ -1,9 +1,9 @@
 # File Name: configure_win2k19node1.yml
 # Author: Roger McNulty
-# Ver: 1.0.0 
-# Purpose: Configure inital settings for Windows Server 2019
+# Ver: 1.0.1 
+# Purpose: Configure initial settings for Windows Server 2019
 # Date: 06/14/24
-# Notes: 
+# Notes: Fixed module issue with win_firewall_profile
 # Change log:
 
 ## ██████╗  ██████╗  ██████╗  ██████╗ ██████╗ ████████╗
@@ -26,15 +26,10 @@
         password: "{{ testuser_password | default('Password123456') }}"
         state: present
 
-    # Disable Windows Firewall Profiles
+    # Disable Windows Firewall Profiles using PowerShell
     - name: Disable Windows Firewall Profiles
-      win_firewall_profile:
-        profile: "{{ item }}"
-        state: off
-      with_items:
-        - Domain
-        - Public
-        - Private
+      ansible.windows.win_shell: |
+        Set-NetFirewallProfile -Profile Domain,Public,Private -Enabled False
 
     # Disable Windows Defender Real-time Protection
     - name: Disable Windows Defender Real-time Protection
@@ -153,7 +148,7 @@
         reboot_timeout: 600
 
     # Log in as "testuser" after reboot (if resolution change was successful)
-    - name: Log in as "tstuser" after reboot
+    - name: Log in as "testuser" after reboot
       ansible.windows.win_shell: |
         $SecurePassword = ConvertTo-SecureString "Password123456" -AsPlainText -Force
         $Credential = New-Object System.Management.Automation.PSCredential ("testuser", $SecurePassword)
