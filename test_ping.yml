@@ -9,7 +9,7 @@
 
 ---
 - name: Test Ansible Connectivity to Windows Node
-  hosts: 192.168.33.10  # Replace with the hostname or IP address of your Windows Server node
+  hosts: 192.168.17.11  # Replace with the hostname or IP address of your Windows Server node
   gather_facts: no
 
   tasks:
