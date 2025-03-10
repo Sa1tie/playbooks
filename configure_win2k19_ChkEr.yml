@@ -7,7 +7,7 @@
 # Change log:
 # TODO: Use Ansible Vault to encrypt sensitive data like passwords.
 #	Break your playbook into roles or tasks to improve readability and maintainability.
-#	Use an elevated shell to execute commands when logging in/out from Admin to zcaadmin.
+#	Use an elevated shell to execute commands when logging in/out from Admin to admin.
 #	Add error handling and checks to ensure the playbook doesn't continue blindly.
 #	Ensure consistent indentation throughout the playbook.
 
@@ -21,11 +21,11 @@
     subnet_mask: 255.255.255.128
 
   tasks:
-    # Create a new user "zcaadmin"
-    - name: Create new user "zcaadmin"
+    # Create a new user "admin"
+    - name: Create new user "admin"
       win_user:
-        name: zcaadmin
-        password: "{{ zcaadmin_password | default('Password123456') }}"
+        name: admin
+        password: "{{ admin_password | default('Password123456') }}"
         state: present
 
     # Disable Windows Firewall Profiles
@@ -163,11 +163,11 @@
       ansible.windows.win_reboot:
         reboot_timeout: 600
 
-    # Log in as "zcaadmin" after reboot
-    - name: Log in as "zcaadmin" after reboot
+    # Log in as "admin" after reboot
+    - name: Log in as "admin" after reboot
       ansible.windows.win_shell: |
         $SecurePassword = ConvertTo-SecureString "Password123456" -AsPlainText -Force
-        $Credential = New-Object System.Management.Automation.PSCredential ("zcaadmin", $SecurePassword)
+        $Credential = New-Object System.Management.Automation.PSCredential ("admin", $SecurePassword)
         Start-Process -FilePath "C:\Windows\System32\cmd.exe" -Credential $Credential
       async: 3600
       poll: 0
