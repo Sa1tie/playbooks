@@ -21,7 +21,7 @@
     community.general.dell_server_info:
       hostname: "{{ server_ip }}"
       username: root
-      password: Castadmin1
+      password: admin1
     register: server_info
           
   - name: Enable drive encryption
@@ -29,7 +29,7 @@
       name: Enable drive encryption
       iDRAC_ip: "{{ server_ip }}"
       iDRAC_user: root
-      iDRAC_password: Castadmin1
+      iDRAC_password: admin1
       command: SecurityConfig
       
   - name: Set encryption passphrase
@@ -37,7 +37,7 @@
       name: Set encryption passphrase
       iDRAC_ip: "{{ server_ip }}"
       iDRAC_user: root
-      iDRAC_password: Castadmin1  
+      iDRAC_password: admin1  
       command: SetManagerKey
       attribute: Key
       value: SED_Local_Key1
@@ -48,7 +48,7 @@
       name: Create OS VD
       iDRAC_ip: "{{ server_ip }}"
       iDRAC_user: root
-      iDRAC_password: Castadmin1
+      iDRAC_password: admin1
       command: CreateVD
       raidlevel: 1
       disks: [01:00, 01:01]
@@ -60,7 +60,7 @@
       name: Create DATA VD 
       iDRAC_ip: "{{ server_ip }}"
       iDRAC_user: root
-      iDRAC_password: Castadmin1
+      iDRAC_password: admin1
       command: CreateVD
       raidlevel: 5
       disks: All
@@ -72,7 +72,7 @@
       name: Create OS VD
       iDRAC_ip: "{{ server_ip }}"
       iDRAC_user: root
-      iDRAC_password: Castadmin1
+      iDRAC_password: admin1
       command: CreateVD
       raidlevel: 1
       disks: [01:00, 01:01]
@@ -84,7 +84,7 @@
       name: Create DATA VD
       iDRAC_ip: "{{ server_ip }}"
       iDRAC_user: root
-      iDRAC_password: Castadmin1
+      iDRAC_password: admin1
       command: CreateVD
       raidlevel: 6
       disks: All  
