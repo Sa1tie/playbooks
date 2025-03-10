@@ -17,10 +17,10 @@
     subnet_mask: 255.255.255.128
 
   tasks:
-    - name: Create new user "zcaadmin"
+    - name: Create new user "admin"
       win_user:
-        name: zcaadmin
-        password: "{{ zcaadmin_password | default('Password123456') }}"
+        name: admin
+        password: "{{ admin_password | default('Password123456') }}"
         state: present
 
     - name: Disable Windows Firewall Profiles
@@ -140,10 +140,10 @@
       ansible.windows.win_reboot:
         reboot_timeout: 600
 
-    - name: Log in as "zcaadmin" after reboot
+    - name: Log in as "admin" after reboot
       ansible.windows.win_shell: |
       	$SecurePassword = ConvertTo-SecureString "Password123456" -AsPlainText -Force
-      	$Credential = New-Object System.Management.Automation.PSCredential ("zcaadmin", $SecurePassword)
+      	$Credential = New-Object System.Management.Automation.PSCredential ("admin", $SecurePassword)
     	Start-Process -FilePath "C:\Windows\System32\cmd.exe" -Credential $Credential
   	args:
     	executable: powershell.exe
