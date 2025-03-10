@@ -7,7 +7,7 @@
 # Change log:
 # TODO: Use Ansible Vault to encrypt sensitive data like passwords.
 #	Break your playbook into roles or tasks to improve readability and maintainability.
-#	Use an elevated shell to execute commands when logging in/out from Admin to zcaadmin.
+#	Use an elevated shell to execute commands when logging in/out from Admin to admin.
 #	Add error handling and checks to ensure the playbook doesn't continue blindly.
 #	Ensure consistent indentation throughout the playbook.
 
